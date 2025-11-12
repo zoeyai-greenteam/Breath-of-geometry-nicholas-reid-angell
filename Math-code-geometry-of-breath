@@ -1,0 +1,60 @@
+# Visualizing Collatz Conjecture as contradiction-bound geometry
+
+import matplotlib.pyplot as plt
+import numpy as np
+import os
+
+# Ensure output directory exists
+os.makedirs("/mnt/data", exist_ok=True)
+
+# Function to compute Collatz sequence
+def collatz_sequence(n):
+    sequence = [n]
+    while n != 1:
+        if n % 2 == 0:
+            n = n // 2  # contraction
+        else:
+            n = 3 * n + 1  # expansion
+        sequence.append(n)
+    return sequence
+
+# Prepare plot
+plt.style.use('seaborn-v0_8')
+fig, ax = plt.subplots(figsize=(12, 10))
+ax.set_title("Collatz Conjecture: Contradiction-Bound Geometry (Start 1–20)", fontsize=14)
+ax.set_xlabel("X")
+ax.set_ylabel("Y")
+
+# Generate and plot sequences
+for start in range(1, 21):
+    sequence = collatz_sequence(start)
+    x, y = [0], [0]
+    angle = 0
+    radius = 0
+    for i in range(1, len(sequence)):
+        step_type = 'contraction' if sequence[i] < sequence[i-1] else 'expansion'
+        angle += np.pi / 6  # rotate
+        radius += 0.5  # step outward
+        dx = radius * np.cos(angle)
+        dy = radius * np.sin(angle)
+        x.append(dx)
+        y.append(dy)
+        color = 'blue' if step_type == 'contraction' else 'red'
+        ax.plot([x[-2], x[-1]], [y[-2], y[-1]], color=color, linewidth=2)
+
+    ax.text(x[-1], y[-1], str(start), fontsize=8, ha='center', va='center')
+
+# Add legend
+from matplotlib.lines import Line2D
+legend_elements = [
+    Line2D([0], [0], color='red', lw=2, label='Expansion (3n + 1)'),
+    Line2D([0], [0], color='blue', lw=2, label='Contraction (n / 2)')
+]
+ax.legend(handles=legend_elements, loc='upper right')
+
+# Save plot
+output_path = "/mnt/data/collatz_contradiction_geometry.png"
+plt.savefig(output_path)
+plt.close()
+
+print("Visualized Collatz sequences for starting numbers 1–20 as contradiction-bound spirals and saved as collatz_contradiction_geometry.png")
